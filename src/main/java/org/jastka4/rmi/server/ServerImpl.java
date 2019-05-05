@@ -1,8 +1,6 @@
 package org.jastka4.rmi.server;
 
-import org.jastka4.knapsack.KnapsackAlgorithmConstants;
-import org.jastka4.knapsack.ProblemInstance;
-import org.jastka4.knapsack.Solution;
+import org.jastka4.knapsack.*;
 import org.jastka4.rmi.OS;
 import org.jastka4.rmi.register.Register;
 
@@ -22,32 +20,44 @@ public class ServerImpl implements Server {
 		this.algorithm = algorithm;
 	}
 
-	public static void main(String args[]) {
-		final Server server = new ServerImpl("Server 1", KnapsackAlgorithmConstants.BRUTE_FORCE);
+	public static void main(String... args) {
+		KnapsackAlgorithmConstants algorithm = getAlgorithmByNumber(Integer.parseInt(args[0]));
+		final Server server = new ServerImpl("Server_" + algorithm.toString(), algorithm);
 		try {
 			final Registry registry = LocateRegistry.getRegistry(Register.PORT);
 			server.register(registry);
 			final Server stub = (Server) UnicastRemoteObject.exportObject(server, 0);
 			registry.bind(server.getName(), stub);
-		} catch (RemoteException | AlreadyBoundException e) {
+		} catch (RemoteException | AlreadyBoundException | NotBoundException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public Solution solve(final ProblemInstance problemInstance) {
-		return null;
+		final KnapsackAlgorithmFactory factory = new KnapsackAlgorithmFactory();
+		final KnapsackAlgorithm knapsack = factory.createKnapsackAlgorithm(algorithm, problemInstance);
+		return knapsack.solve();
 	}
 
 	@Override
-	public boolean register(final Registry registry) {
-		try {
-			final Register register = (Register) registry.lookup("Register");
-			return register.register(new OS(name, algorithm));
-		} catch (RemoteException | NotBoundException e) {
-			e.printStackTrace();
+	public boolean register(final Registry registry) throws RemoteException, NotBoundException {
+		final Register register = (Register) registry.lookup("Register");
+		return register.register(new OS(name, algorithm));
+	}
+
+	private static KnapsackAlgorithmConstants getAlgorithmByNumber(final int number) {
+		switch (number) {
+			case 2:
+				return KnapsackAlgorithmConstants.DYNAMIC_PROGRAMMING;
+			case 3:
+				return KnapsackAlgorithmConstants.GREEDY_ALGORITHM;
+			case 4:
+				return KnapsackAlgorithmConstants.RANDOM_SEARCH;
+			case 1:
+			default:
+				return KnapsackAlgorithmConstants.BRUTE_FORCE;
 		}
-		return false;
 	}
 
 	public String getName() {

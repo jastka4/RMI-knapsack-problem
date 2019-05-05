@@ -12,9 +12,10 @@ import java.util.List;
 public class RegisterImpl implements Register {
 	private List<OS> registeredServers;
 
-	public static void main(String[] args) {
+	public static void main(String... args) {
 		try {
 			Registry registry = LocateRegistry.createRegistry(Register.PORT);
+			// 0 - random available port for RMI service port
 			Register stub = (Register) UnicastRemoteObject.exportObject(new RegisterImpl(), 0);
 			registry.rebind("Register", stub);
 		} catch (RemoteException e) {
