@@ -8,8 +8,13 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RegisterImpl implements Register {
+	private static final Logger LOG = Logger.getLogger(Register.class.getName());
+
 	private List<OS> registeredServers;
 
 	public static void main(String... args) {
@@ -17,9 +22,9 @@ public class RegisterImpl implements Register {
 			Registry registry = LocateRegistry.createRegistry(Register.PORT);
 			// 0 - random available port for RMI service port
 			Register stub = (Register) UnicastRemoteObject.exportObject(new RegisterImpl(), 0);
-			registry.rebind("Register", stub);
+			registry.rebind(Register.NAME, stub);
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, e.getMessage());
 		}
 	}
 
@@ -29,23 +34,27 @@ public class RegisterImpl implements Register {
 
 	@Override
 	public boolean register(final OS os) {
-		if (os != null) {
+		if (Objects.nonNull(os)) {
 			registeredServers.add(os);
+			LOG.log(Level.INFO, "Registered new server {0}!", os.getName());
 			printAllServers();
-			return registeredServers.contains(os);
+			return true;
 		}
+		LOG.log(Level.INFO, "Server {0} already registred!", os.getName());
 		return false;
 	}
 
 	private void printAllServers() {
-		System.out.println("Available servers:");
+		StringBuilder stringBuilder = new StringBuilder().append("Available servers:");
 		for (OS registeredServer : registeredServers) {
-			System.out.println(registeredServer.getName());
+			stringBuilder.append("\n").append(registeredServer.getName());
 		}
+		LOG.log(Level.INFO, "{0}", stringBuilder);
 	}
 
 	@Override
 	public List<OS> getServers() throws RemoteException {
+		LOG.log(Level.INFO, "Fetching all servers!");
 		return this.registeredServers;
 	}
 }

@@ -8,11 +8,11 @@ public class OS implements Serializable {
 	private String name;
 	private KnapsackAlgorithmConstants algorithm;
 
-	public OS(String name, KnapsackAlgorithmConstants algorithm)
-	{
-		this.name=name;
-		this.algorithm=algorithm;
+	public OS(String name, KnapsackAlgorithmConstants algorithm) {
+		this.name = name;
+		this.algorithm = algorithm;
 	}
+
 	public String getName() {
 		return name;
 	}

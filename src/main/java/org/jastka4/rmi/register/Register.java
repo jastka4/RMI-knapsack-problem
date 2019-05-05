@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface Register extends Remote {
 	int PORT = 1099;
+	String NAME = "Register";
 
 	boolean register(OS os) throws RemoteException;
 	List<OS> getServers() throws RemoteException;

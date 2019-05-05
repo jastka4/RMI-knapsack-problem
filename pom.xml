@@ -37,9 +37,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>org.jastka4.rmi.Main</mainClass>
-                </configuration>
             </plugin>
         </plugins>
     </build>

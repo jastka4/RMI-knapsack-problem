@@ -10,8 +10,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ServerImpl implements Server {
+	private static final Logger LOG = Logger.getLogger(Server.class.getName());
+
 	private String name;
 	private KnapsackAlgorithmConstants algorithm;
 
@@ -29,22 +33,10 @@ public class ServerImpl implements Server {
 			final Server stub = (Server) UnicastRemoteObject.exportObject(server, 0);
 			registry.bind(server.getName(), stub);
 		} catch (RemoteException | AlreadyBoundException | NotBoundException e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, e.getMessage());
 		}
 	}
 
-	@Override
-	public Solution solve(final ProblemInstance problemInstance) {
-		final KnapsackAlgorithmFactory factory = new KnapsackAlgorithmFactory();
-		final KnapsackAlgorithm knapsack = factory.createKnapsackAlgorithm(algorithm, problemInstance);
-		return knapsack.solve();
-	}
-
-	@Override
-	public boolean register(final Registry registry) throws RemoteException, NotBoundException {
-		final Register register = (Register) registry.lookup("Register");
-		return register.register(new OS(name, algorithm));
-	}
 
 	private static KnapsackAlgorithmConstants getAlgorithmByNumber(final int number) {
 		switch (number) {
@@ -60,10 +52,27 @@ public class ServerImpl implements Server {
 		}
 	}
 
+	@Override
+	public Solution solve(final ProblemInstance problemInstance) {
+		LOG.log(Level.INFO, "Solving knapsack problem: {0}", problemInstance);
+		final KnapsackAlgorithmFactory factory = new KnapsackAlgorithmFactory();
+		final KnapsackAlgorithm knapsack = factory.createKnapsackAlgorithm(algorithm, problemInstance);
+		return knapsack.solve();
+	}
+
+	@Override
+	public boolean register(final Registry registry) throws RemoteException, NotBoundException {
+		LOG.log(Level.INFO, "Registering {0}!", name);
+		final Register register = (Register) registry.lookup(Register.NAME);
+		return register.register(new OS(name, algorithm));
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public KnapsackAlgorithmConstants getAlgorithm() {
 		return algorithm;
 	}
